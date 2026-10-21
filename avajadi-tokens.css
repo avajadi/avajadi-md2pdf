@@ -1,0 +1,27 @@
+/* Design tokens for the avajadi profile.
+   Charcoal and cream are taken from the panda logo (assets/source/). Bamboo is the one
+   accent, chosen to read as a link color: 5.2:1 against white and 4.6:1 against
+   --ava-cream-dark, so it clears WCAG AA for body text on both. */
+
+:root {
+  /* --- From the logo --- */
+  --ava-charcoal:      #2D2D2D;
+  --ava-cream:         #FFFDF1;
+
+  /* --- Neutrals derived from the logo pair --- */
+  --ava-white:         #FFFFFF;
+  --ava-cream-dark:    #F4F1E4;   /* code and inline code backgrounds */
+  --ava-cream-row:     #FAF8EE;   /* alternating table rows */
+  --ava-rule:          #DAD6C8;   /* table row lines, hr */
+  --ava-muted:         #6B675C;   /* captions, footnotes, struck text; 5.6:1 on white */
+
+  /* --- Accent --- */
+  --ava-bamboo:        #3E7B27;
+  --ava-bamboo-pale:   #EEF4E6;   /* blockquote background */
+  --ava-highlight:     #FFF1A8;   /* <mark> */
+
+  /* --- Fonts --- */
+  --ava-font-heading:  "Space Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --ava-font-body:     "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --ava-font-mono:     "IBM Plex Mono", "Liberation Mono", Consolas, monospace;
+}

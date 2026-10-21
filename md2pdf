@@ -1,0 +1,86 @@
+#!/usr/bin/env bash
+# Runs avajadi-md2pdf as a one-off Docker container - no local pandoc, Chromium or
+# Node needed, only Docker. Forked from rise-md2pdf's md2rise wrapper.
+#
+# There is no registry: the image is built locally from this directory the first time
+# it's needed, and tagged avajadi-md2pdf:latest. After changing the CSS, fonts or
+# scripts, rebuild it with
+#
+#   md2pdf --rebuild
+#
+# AVAJADI_MD2PDF_IMAGE overrides the image reference, e.g. to try a differently
+# tagged build.
+#
+# Usage: md2pdf <file.md> [file.md ...]
+#        md2pdf --rebuild
+#
+# Files can live anywhere on the filesystem, not just under the current
+# directory - each file's own directory is mounted at the same path it has on
+# the host (see below), so no paths need rewriting between host and container.
+set -euo pipefail
+
+IMAGE="${AVAJADI_MD2PDF_IMAGE:-avajadi-md2pdf:latest}"
+
+# The repo directory, found through any chain of symlinks (md2pdf is meant to be
+# symlinked onto PATH), since that's the Docker build context.
+src="${BASH_SOURCE[0]}"
+while [ -L "$src" ]; do
+  target="$(readlink "$src")"
+  case "$target" in
+    /*) src="$target" ;;
+    *)  src="$(dirname "$src")/$target" ;;
+  esac
+done
+TOOLS="$(cd "$(dirname "$src")" && pwd)"
+
+build_image() {
+  docker build -t "$IMAGE" "$TOOLS"
+}
+
+if [ "${1-}" = "--rebuild" ]; then
+  build_image
+  exit 0
+fi
+
+if [ "$#" -eq 0 ]; then
+  echo "usage: $(basename "$0") <file.md> [file.md ...]" >&2
+  echo "       $(basename "$0") --rebuild" >&2
+  exit 2
+fi
+
+if ! docker image inspect "$IMAGE" >/dev/null 2>&1; then
+  echo "$IMAGE not found locally, building it from $TOOLS" >&2
+  build_image >&2
+fi
+
+# Resolve each argument to an absolute host path and collect every unique
+# directory that needs mounting. The whole directory is mounted (not just the
+# file), since build.sh writes its output next to the source file. Each
+# directory is mounted at the exact same path inside the container as
+# outside, so the arguments can be passed through unchanged.
+abs_files=()
+mount_dirs=()
+
+have_dir() {
+  local needle="$1"; shift
+  for d in "$@"; do [ "$d" = "$needle" ] && return 0; done
+  return 1
+}
+
+for f in "$@"; do
+  [ -f "$f" ] || { echo "missing: $f" >&2; exit 1; }
+  dir="$(cd "$(dirname "$f")" && pwd)"
+  abs_files+=("$dir/$(basename "$f")")
+  have_dir "$dir" "${mount_dirs[@]-}" || mount_dirs+=("$dir")
+done
+
+mount_args=()
+for dir in "${mount_dirs[@]}"; do
+  mount_args+=(-v "$dir:$dir")
+done
+
+docker run --rm \
+  --user "$(id -u):$(id -g)" \
+  -e HOME=/tmp \
+  "${mount_args[@]}" \
+  "$IMAGE" "${abs_files[@]}"

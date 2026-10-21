@@ -1,0 +1,9 @@
+# Build output when testing in-place
+*.pdf
+*.html
+!example.pdf
+# Editor/OS cruft
+.DS_Store
+__pycache__/
+# JetBrains
+.idea/

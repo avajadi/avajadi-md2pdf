@@ -1,0 +1,223 @@
+/* avajadi document template for Markdown → HTML → PDF (Chromium).
+   Forked from rise-md2pdf's rise-doc.css: same layout and element coverage, avajadi
+   colors and fonts. Colors from avajadi-tokens.css. All three font families come in
+   via the fonts.conf that print.js points Chromium at - none of them needs embedding
+   as a data URI, since all have OS/2 fsType 0 (see README.md). */
+
+@import url("avajadi-tokens.css");
+
+/* Page size and margins are set by print.js via Page.printToPDF, since the
+   footer with page numbers and the logo lives in Chromium's footerTemplate. */
+@page { size: A4 portrait; }
+
+html { font-size: 10pt; }
+
+body {
+  font-family: var(--ava-font-body);
+  color: var(--ava-charcoal);
+  line-height: 1.55;
+  margin: 0;
+  hyphens: none;
+}
+
+/* ---------- Headings ---------- */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--ava-font-heading);
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0 0 0.4em;
+  break-after: avoid;
+}
+
+h1 {
+  font-size: 2.15rem;
+  color: var(--ava-charcoal);
+  letter-spacing: -0.01em;
+  padding-bottom: 0.45em;
+  border-bottom: 3px solid var(--ava-bamboo);
+  margin-bottom: 1.1em;
+}
+
+h2 {
+  font-size: 1.45rem;
+  color: var(--ava-charcoal);
+  margin-top: 1.9em;
+  break-before: auto;
+}
+
+h3 {
+  font-size: 1.15rem;
+  color: var(--ava-bamboo);
+  margin-top: 1.5em;
+}
+
+h4 { font-size: 1rem; color: var(--ava-charcoal); margin-top: 1.2em; }
+h5 { font-size: 0.95rem; color: var(--ava-charcoal); margin-top: 1.1em; }
+h6 {
+  font-size: 0.85rem;
+  color: var(--ava-bamboo);
+  margin-top: 1.1em;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+p { margin: 0 0 0.75em; orphans: 3; widows: 3; }
+
+/* ---------- Lists ---------- */
+ul, ol { margin: 0 0 0.85em; padding-left: 1.35em; }
+li { margin-bottom: 0.3em; }
+li > p { margin-bottom: 0.3em; }
+li > ul, li > ol { margin: 0.3em 0 0; }
+li:last-child { margin-bottom: 0; }
+li::marker { color: var(--ava-bamboo); }
+
+/* Task lists (GFM). Pandoc marks these up differently across versions, so both
+   the class and a plain input selector are needed. */
+ul.task-list, ul:has(> li > input[type="checkbox"]) { list-style: none; padding-left: 0.2em; }
+li > input[type="checkbox"] { margin: 0 0.45em 0 0; vertical-align: baseline; accent-color: var(--ava-bamboo); }
+
+/* ---------- Definition lists ---------- */
+dl { margin: 0 0 0.9em; }
+dt { font-weight: 700; margin-top: 0.6em; }
+dd { margin: 0.15em 0 0 1.35em; }
+
+/* ---------- Tables ---------- */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 0.9em 0 1.3em;
+  font-size: 0.92rem;
+}
+
+/* Tables are allowed to break across a page boundary, but never mid-row, and
+   the header repeats on the next page. The alternative - break-inside: avoid
+   on the whole table - pushes a table that doesn't fit in full onto the next
+   page and leaves a large gap at the bottom of the previous one. */
+thead { display: table-header-group; }
+tfoot { display: table-footer-group; }
+tr { break-inside: avoid; }
+
+thead th {
+  background: var(--ava-charcoal);
+  color: var(--ava-cream);
+  font-family: var(--ava-font-heading);
+  font-weight: 700;
+  text-align: left;
+  padding: 0.45em 0.6em;
+  border: none;
+}
+
+tbody td {
+  padding: 0.4em 0.6em;
+  border-bottom: 1px solid var(--ava-rule);
+  vertical-align: top;
+}
+
+tbody tr:nth-child(even) td,
+tbody tr:nth-child(even) th { background: var(--ava-cream-row); }
+
+/* Row headers, i.e. th inside tbody, should stand out but not be filled like the table header. */
+tbody th {
+  padding: 0.4em 0.6em;
+  border-bottom: 1px solid var(--ava-rule);
+  vertical-align: top;
+  text-align: left;
+  font-weight: 700;
+}
+
+caption {
+  caption-side: bottom;
+  padding-top: 0.5em;
+  font-size: 0.85rem;
+  color: var(--ava-muted);
+  text-align: left;
+}
+
+/* ---------- Code ---------- */
+code {
+  font-family: var(--ava-font-mono);
+  font-size: 0.88em;
+  background: var(--ava-cream-dark);
+  padding: 0.1em 0.3em;
+  border-radius: 2px;
+}
+
+pre {
+  font-family: var(--ava-font-mono);
+  background: var(--ava-cream-dark);
+  border-left: 3px solid var(--ava-bamboo);
+  padding: 0.75em 0.9em;
+  margin: 0.9em 0 1.2em;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  break-inside: avoid;
+}
+
+pre code { background: none; padding: 0; font-size: 1em; }
+
+/* Long tokens with no whitespace, such as base64 or URLs, should break instead
+   of spilling past the page edge. */
+pre, pre code { overflow-wrap: anywhere; word-break: break-word; }
+
+/* ---------- Miscellaneous ---------- */
+a {
+  color: var(--ava-bamboo);
+  text-decoration: underline;
+  text-decoration-thickness: 0.06em;
+  text-underline-offset: 0.15em;
+  word-break: break-word;
+}
+
+blockquote {
+  margin: 0.9em 0;
+  padding: 0.6em 1em;
+  background: var(--ava-bamboo-pale);
+  border-left: 3px solid var(--ava-bamboo);
+}
+
+hr { border: none; border-top: 1px solid var(--ava-rule); margin: 1.6em 0; }
+
+strong { font-weight: 700; }
+em { font-style: italic; }
+del { color: var(--ava-muted); }
+mark { background: var(--ava-highlight); padding: 0 0.15em; }
+sub, sup { font-size: 0.72em; line-height: 0; }
+abbr[title] { text-decoration: underline dotted; }
+
+/* ---------- Images ---------- */
+img {
+  max-width: 100%;
+  /* The height cap stops an image larger than the text area from getting cut
+     off at the page boundary. Combined with max-width and height: auto, the
+     aspect ratio is preserved. */
+  max-height: 225mm;
+  height: auto;
+}
+
+figure {
+  margin: 1em 0 1.3em;
+  break-inside: avoid;
+}
+
+figcaption {
+  margin-top: 0.45em;
+  font-size: 0.85rem;
+  color: var(--ava-muted);
+}
+
+/* ---------- Footnotes ---------- */
+.footnotes {
+  margin-top: 2em;
+  font-size: 0.88rem;
+  color: var(--ava-muted);
+}
+
+.footnotes hr { margin-bottom: 1em; }
+
+a.footnote-ref sup { font-weight: 700; }
+
+/* Pandoc's footnote return arrow is a clickable web affordance with no meaning
+   in print, and it would pull in a fallback font in the PDF. */
+a.footnote-back { display: none; }
