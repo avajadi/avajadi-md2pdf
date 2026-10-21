@@ -61,7 +61,7 @@ function writeFontsConf(dir) {
   return target;
 }
 
-// Footer anatomy: page number in IBM Plex Mono, the name in letterspaced Space
+// Footer anatomy: page number in JetBrains Mono, the name in letterspaced Space
 // Grotesk capitals echoing the logo's lettering, and the panda at the far right.
 // Colors are literal here, not tokens: the footer is its own document and can't
 // see avajadi-tokens.css. Charcoal #2D2D2D, bamboo #3E7B27.
@@ -80,7 +80,7 @@ function footerTemplate() {
       }
       #ava-footer .num {
         flex: 0 0 auto;
-        font-family: "IBM Plex Mono", monospace;
+        font-family: "JetBrains Mono", monospace;
         font-weight: 700;
         color: #3E7B27;
       }

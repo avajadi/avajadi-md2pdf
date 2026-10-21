@@ -1,7 +1,7 @@
 # Avajadi document profile
 
 This file exercises every element the template styles, and doubles as the smoke test.
-Body text is IBM Plex Sans, headings are Space Grotesk, code is IBM Plex Mono. Links
+Body text is IBM Plex Sans, headings are Space Grotesk, code is JetBrains Mono. Links
 look like [this one](https://github.com/avajadi), and inline code like `md2pdf --rebuild`.
 
 ## Lists

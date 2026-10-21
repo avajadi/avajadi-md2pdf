@@ -1,7 +1,7 @@
 # avajadi-md2pdf
 
 Converts Markdown to a PDF in the avajadi graphical profile: A4 portrait, Space Grotesk
-headings, IBM Plex Sans body text, IBM Plex Mono for code, charcoal and cream from the
+headings, IBM Plex Sans body text, JetBrains Mono for code, charcoal and cream from the
 panda logo with bamboo green as the single accent, and a footer with page numbers, the
 name and the panda on every page.
 
@@ -60,11 +60,11 @@ This is exactly what runs inside the image.
 | H2            | Space Grotesk Bold, 1.45 rem, charcoal                             |
 | H3            | Space Grotesk Bold, 1.15 rem, bamboo                               |
 | H6            | Uppercase, letterspaced, bamboo                                    |
-| Code          | IBM Plex Mono on cream `#F4F1E4`, bamboo left border               |
+| Code          | JetBrains Mono on cream `#F4F1E4`, bamboo left border              |
 | Tables        | Charcoal header with cream text; alternating cream rows            |
 | Links         | Bamboo, underlined (so they still read as links in grayscale)      |
 | Blockquotes   | Pale bamboo `#EEF4E6` background, bamboo left border               |
-| Footer        | `page/total` in Plex Mono, `AVAJADI SYSTEMS` letterspaced, panda   |
+| Footer        | `page/total` in JetBrains Mono, `AVAJADI SYSTEMS` letterspaced, panda |
 
 All colors live as tokens in `avajadi-tokens.css`. The footer can't see those tokens
 (it renders in its own document), so `print.js` repeats charcoal and bamboo as
@@ -74,10 +74,10 @@ literals - change both places if you change either color.
 
 **One font path instead of two.** RISE embeds Code Pro as a data URI because its OS/2
 `fsType` is 8, and Chromium's Skia rasterizes system fonts with a non-zero `fsType`
-into Type 3 glyphs. Space Grotesk and IBM Plex all have `fsType` 0, so every font
-comes in through the `fonts.conf` that `print.js` writes at run time. There's no
-`make-fonts.py` and no generated font CSS. If you swap in a new font, check its
-`fsType` first:
+into Type 3 glyphs. Space Grotesk, IBM Plex Sans and JetBrains Mono all have `fsType`
+0, so every font comes in through the `fonts.conf` that `print.js` writes at run time.
+There's no `make-fonts.py` and no generated font CSS. If you swap in a new font, check
+its `fsType` first:
 
 ```
 python3 -c "from fontTools.ttLib import TTFont; print(TTFont('fonts/X.ttf')['OS/2'].fsType)"
@@ -97,9 +97,9 @@ bigger, such as a cover page.
 pdffonts file.pdf
 ```
 
-Should list only `SpaceGrotesk-Bold`, `IBMPlexSans*` and `IBMPlexMono*`, all as
+Should list only `SpaceGrotesk-Bold`, `IBMPlexSans*` and `JetBrainsMono*`, all as
 `CID TrueType`. `Type 3` means a font got rasterized (check its `fsType`); `DejaVuSans`
-means the document uses a glyph the Plex fonts lack, which is usually harmless.
+means the document uses a glyph these fonts lack, which is usually harmless.
 
 ```
 pdftotext file.pdf - | grep -cE '^[0-9]+/[0-9]+$'
@@ -118,12 +118,12 @@ lost its page number on some page, typically a footer font problem.
 | `avajadi-doc.css`    | The document template: typography, tables, code, heading scale.       |
 | `avajadi-tokens.css` | Color and font tokens.                                                |
 | `make-logo.py`       | Derives the transparent logo and footer mark from `assets/source/`.   |
-| `fonts/`             | Space Grotesk Bold, IBM Plex Sans (4 styles), IBM Plex Mono (2).      |
+| `fonts/`             | Space Grotesk Bold, IBM Plex Sans (4 styles), JetBrains Mono (2).     |
 | `assets/`            | Derived logos; `source/` holds the original.                          |
 | `example.md`         | Exercises every styled element. Doubles as the smoke test.            |
 | `Dockerfile`         | pandoc, Chromium and this repo's files, so nothing is needed locally. |
 
 ## Licenses
 
-Space Grotesk and IBM Plex are under the SIL Open Font License 1.1; the license texts
-are in `fonts/`. The panda logo is avajadi's own.
+Space Grotesk, IBM Plex Sans and JetBrains Mono are under the SIL Open Font License
+1.1; the license texts are in `fonts/`. The panda logo is avajadi's own.
