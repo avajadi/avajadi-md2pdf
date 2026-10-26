@@ -11,8 +11,9 @@
 # AVAJADI_MD2PDF_IMAGE overrides the image reference, e.g. to try a differently
 # tagged build.
 #
-# Usage: md2pdf <file.md> [file.md ...]
+# Usage: md2pdf [--] <file.md> [file.md ...]
 #        md2pdf --rebuild
+#        md2pdf -h | --help | --version
 #
 # Files can live anywhere on the filesystem, not just under the current
 # directory - each file's own directory is mounted at the same path it has on
@@ -20,9 +21,11 @@
 set -euo pipefail
 
 IMAGE="${AVAJADI_MD2PDF_IMAGE:-avajadi-md2pdf:latest}"
+PROG="$(basename "$0")"
 
 # The repo directory, found through any chain of symlinks (md2pdf is meant to be
-# symlinked onto PATH), since that's the Docker build context.
+# symlinked onto PATH), since that's the Docker build context. Plain readlink, since
+# `readlink -f` is GNU-only and macOS lacks `realpath`.
 src="${BASH_SOURCE[0]}"
 while [ -L "$src" ]; do
   target="$(readlink "$src")"
@@ -33,18 +36,74 @@ while [ -L "$src" ]; do
 done
 TOOLS="$(cd "$(dirname "$src")" && pwd)"
 
-build_image() {
-  docker build -t "$IMAGE" "$TOOLS"
+# The wrapper's version is version.txt in the checkout it lives in. Guarded, so a copy
+# outside the checkout says "unknown" instead of failing.
+wrapper_version() {
+  local v=""
+  [ -f "$TOOLS/version.txt" ] && v="$(tr -d '[:space:]' < "$TOOLS/version.txt")"
+  echo "${v:-unknown}"
 }
 
-if [ "${1-}" = "--rebuild" ]; then
-  build_image
-  exit 0
-fi
+build_image() {
+  docker build --build-arg VERSION="$(wrapper_version)" -t "$IMAGE" "$TOOLS"
+}
+
+usage() {
+  cat <<EOF
+Usage: $PROG [--] <file.md> [file.md ...]
+       $PROG --rebuild
+       $PROG -h | --help | --version
+
+Convert Markdown files to an avajadi-formatted PDF (.pdf), written next to each source
+file. Runs in a one-off Docker container; only Docker is needed locally. The image is
+built from $TOOLS on first use.
+
+Options:
+  -h, --help     show this help and exit
+      --version  print the version and the Docker image in use, then exit
+      --rebuild  rebuild the image (after changing CSS, fonts or scripts), then exit
+  --             end of options; every later argument is a file name
+
+Environment:
+  AVAJADI_MD2PDF_IMAGE  image reference to build and run instead of
+                        avajadi-md2pdf:latest
+
+Current image: $IMAGE
+EOF
+}
+
+version() {
+  local image_v
+  echo "$PROG $(wrapper_version) (avajadi-md2pdf)"
+  # A built image carries its own version label; it may differ from this checkout's
+  # version.txt if the image wasn't rebuilt after a bump. Never build just for this.
+  if image_v="$(docker image inspect \
+      --format '{{index .Config.Labels "org.opencontainers.image.version"}}' \
+      "$IMAGE" 2>/dev/null)"; then
+    # Images built before the label existed, or by a plain `docker build`, say nothing.
+    echo "image:   $IMAGE (version ${image_v:-unknown, image has no version label})"
+  else
+    echo "image:   $IMAGE (not built yet)"
+  fi
+}
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    -h|--help)  usage; exit 0 ;;
+    --version)  version; exit 0 ;;
+    --rebuild)  build_image; exit 0 ;;
+    --)         shift; break ;;
+    -?*)
+      echo "$PROG: unknown option: $1" >&2
+      echo "Try '$PROG --help' for more information." >&2
+      exit 2
+      ;;
+    *) break ;;
+  esac
+done
 
 if [ "$#" -eq 0 ]; then
-  echo "usage: $(basename "$0") <file.md> [file.md ...]" >&2
-  echo "       $(basename "$0") --rebuild" >&2
+  usage >&2
   exit 2
 fi
 

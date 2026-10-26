@@ -53,3 +53,9 @@ RUN chmod +x build.sh print.js
 # WORKDIR - /work is just where a mounted host directory is expected to land.
 WORKDIR /work
 ENTRYPOINT ["/opt/avajadi-md2pdf/build.sh"]
+
+# md2pdf passes version.txt here, so `md2pdf --version` can tell which version a built
+# image is. A plain `docker build` without --build-arg leaves the label empty. Last on
+# purpose: an ARG invalidates the cache of every RUN after it when its value changes.
+ARG VERSION
+LABEL org.opencontainers.image.version="$VERSION"

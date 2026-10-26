@@ -21,6 +21,11 @@ const MM = 1 / 25.4; // millimeters -> inches, the unit CDP wants margins in
 
 const MARGINS = { top: 22, bottom: 20, left: 20, right: 20 };
 const FOOTER_TEXT = "Avajadi Systems";
+// Set by build.sh from the document's `version:` and `revision:` front matter; an empty
+// value leaves that box out. Named _DOC_VERSION to match rise-md2pdf, where
+// RISE_MD2PDF_VERSION is taken by the wrapper.
+const DOC_VERSION = (process.env.AVAJADI_MD2PDF_DOC_VERSION || "").trim();
+const REVISION = (process.env.AVAJADI_MD2PDF_REVISION || "").trim();
 
 // Not every machine has the "chromium" binary - many only have google-chrome, or
 // the -stable/-browser variant. Try the common names in turn instead of
@@ -62,10 +67,15 @@ function writeFontsConf(dir) {
 }
 
 // Footer anatomy: page number in JetBrains Mono, the name in letterspaced Space
-// Grotesk capitals echoing the logo's lettering, and the panda at the far right.
+// Grotesk capitals echoing the logo's lettering, then the document version and revision
+// (in that order, JetBrains Mono like the page number) when the front matter gives them,
+// and the panda at the far right.
 // Colors are literal here, not tokens: the footer is its own document and can't
 // see avajadi-tokens.css. Charcoal #2D2D2D, bamboo #3E7B27.
 function footerTemplate() {
+  const esc = (t) => t.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const version = DOC_VERSION ? `<span class="rev">Version ${esc(DOC_VERSION)}</span>` : "";
+  const revision = REVISION ? `<span class="rev">Revision ${esc(REVISION)}</span>` : "";
   return `
     <style>
       #ava-footer {
@@ -92,12 +102,19 @@ function footerTemplate() {
         letter-spacing: 0.25em;
         text-transform: uppercase;
       }
+      #ava-footer .rev {
+        flex: 0 0 auto;
+        white-space: nowrap;
+        font-family: "JetBrains Mono", monospace;
+      }
       #ava-footer .spacer { flex: 1 1 auto; }
       #ava-footer img { height: 8mm; display: block; }
     </style>
     <div id="ava-footer">
       <span class="num"><span class="pageNumber"></span>/<span class="totalPages"></span></span>
       <span class="org">${FOOTER_TEXT}</span>
+      ${version}
+      ${revision}
       <span class="spacer"></span>
       <img src="${logoDataUri()}" alt="Avajadi Systems">
     </div>`;
